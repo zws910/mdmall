@@ -27,7 +27,7 @@ SECRET_KEY = 'h*jf!b@_9%w#0(b%!sslh3uqzh0#-c8s*gkdem3)i-9+-1+!e$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['api.meiduo.site', '127.0.0.1', 'localhost', 'www.meiduo.site']
 
 # Application definition
 
@@ -40,7 +40,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -111,7 +111,14 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
-    }
+    },
+    "verify_codes": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/2",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
@@ -183,4 +190,3 @@ REST_FRAMEWORK = {
 
 # Models
 AUTH_USER_MODEL = 'users.User'
-
