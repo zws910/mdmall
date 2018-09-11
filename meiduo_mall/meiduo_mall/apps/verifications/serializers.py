@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from django_redis import get_redis_connection
+from rest_framework.generics import GenericAPIView
+
 
 class ImageCodeCheckSerializer(serializers.Serializer):
     """
@@ -35,3 +37,10 @@ class ImageCodeCheckSerializer(serializers.Serializer):
             raise serializers.ValidationError('请求次数过于频繁')
 
         return attrs
+
+
+
+
+
+
+

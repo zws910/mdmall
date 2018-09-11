@@ -1,14 +1,22 @@
+import random
+
 from django.http import HttpResponse
 from django.shortcuts import render
 
-# Create your views here.
+import logging
 from django_redis import get_redis_connection
+from rest_framework import status
 from rest_framework.generics import GenericAPIView
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from meiduo_mall.utils.captcha.captcha import captcha
+from meiduo_mall.utils.yuntongxun.sms import CCP
 from . import constants
+from .serializers import ImageCodeCheckSerializer
 
+
+logger = logging.getLogger('django')
 
 class ImageCodeView(APIView):
     """
@@ -44,11 +52,30 @@ class SMSCodeView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         # 生成短信验证码
+        sms_code = "%06d" % random.randint(0, 999999)
 
+        # 保存短信验证码 redis管道
+        redis_conn = get_redis_connection('verify_codes')
+        pl = redis_conn.pipeline()
+        pl.setex("sms_%s" % mobile, constants.SMS_CODE_REDIS_EXPIRES, )
+        pl.setex("send_flag_" % mobile, constants.SEND_SMS_CODE_INTERVAL, 1)
 
-        #　保存短信验证码 发送记录
+        pl.execute()
 
-        #　返回
+        # 发送短信
+        try:
+            ccp = CCP()
+            expires = constants.SMS_CODE_REDIS_EXPIRES // 60
+            result = ccp.send_template_sms(mobile, [sms_code, expires], constants.SMS_CODE_TEMP_ID)
+        except Exception as e:
+            logger.error("发送验证码短信[异常][ mobile: %s, message: %s ]" % (mobile, e))
+            return Response({'message': 'failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            if result == 0:
+                logger.info("发送验证码短信[正常][ mobile: %s ]" % mobile)
+            else:
+                logger.warning("发送验证码短信[失败][ mobile: %s ]" % mobile, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        # 返回
 
     pass
