@@ -10,6 +10,10 @@ var vm = new Vue({
         error_allow: false,
         error_image_code: false,
         error_sms_code: false,
+        error_name_message: '',
+        error_image_code_message: '',
+        error_phone_message: '',
+        error_sms_code_message: '',
 
         username: '',
         password: '',
@@ -21,6 +25,10 @@ var vm = new Vue({
 
         image_code_id: '',
         image_code_url: '',
+
+        sms_code_tip: '获取短信验证码',
+        sending_flag: false, // 正在发送短信标志
+
     },
     mounted: function () {
         this.generate_image_code();
@@ -102,6 +110,58 @@ var vm = new Vue({
                 this.error_allow = false;
             }
         },
+        // 发送手机短信验证码
+        send_sms_code: function(){
+            if (this.sending_flag == true) {
+                return;
+            }
+            this.sending_flag = true;
+
+            // 校验参数，保证输入框有数据填写
+            this.check_phone();
+            this.check_image_code();
+
+            if (this.error_phone == true || this.error_image_code == true) {
+                this.sending_flag = false;
+                return;
+            }
+
+            // 向后端接口发送请求，让后端发送短信验证码
+            axios.get(this.host + '/sms_codes/' + this.mobile + '/?text=' + this.image_code+'&image_code_id='+ this.image_code_id, {
+                    responseType: 'json'
+                })
+                .then(response => {
+                    // 表示后端发送短信成功
+                    // 倒计时60秒，60秒后允许用户再次点击发送短信验证码的按钮
+                    var num = 60;
+                    // 设置一个计时器
+                    var t = setInterval(() => {
+                        if (num == 1) {
+                            // 如果计时器到最后, 清除计时器对象
+                            clearInterval(t);
+                            // 将点击获取验证码的按钮展示的文本回复成原始文本
+                            this.sms_code_tip = '获取短信验证码';
+                            // 将点击按钮的onclick事件函数恢复回去
+                            this.sending_flag = false;
+                        } else {
+                            num -= 1;
+                            // 展示倒计时信息
+                            this.sms_code_tip = num + '秒';
+                        }
+                    }, 1000, 60)
+                })
+                .catch(error => {
+                    if (error.response.status == 400) {
+                        this.error_image_code_message = '图片验证码有误';
+                        this.error_image_code = true;
+                        this.generate_image_code();
+                    } else {
+                        console.log(error.response.data);
+                    }
+                    this.sending_flag = false;
+                })
+        },
+
         // 注册
         on_submit: function () {
             this.check_username();
