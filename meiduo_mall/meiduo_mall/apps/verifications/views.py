@@ -14,9 +14,10 @@ from meiduo_mall.utils.captcha.captcha import captcha
 from meiduo_mall.utils.yuntongxun.sms import CCP
 from . import constants
 from .serializers import ImageCodeCheckSerializer
-
+from celery_tasks.sms import tasks as sms_tasks
 
 logger = logging.getLogger('django')
+
 
 class ImageCodeView(APIView):
     """
@@ -63,19 +64,22 @@ class SMSCodeView(GenericAPIView):
         pl.execute()
 
         # 发送短信
-        try:
-            ccp = CCP()
-            expires = constants.SMS_CODE_REDIS_EXPIRES // 60
-            result = ccp.send_template_sms(mobile, [sms_code, expires], constants.SMS_CODE_TEMP_ID)
-        except Exception as e:
-            logger.error("发送验证码短信[异常][ mobile: %s, message: %s ]" % (mobile, e))
-            return Response({'message': 'failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            if result == 0:
-                logger.info("发送验证码短信[正常][ mobile: %s ]" % mobile)
-            else:
-                logger.warning("发送验证码短信[失败][ mobile: %s ]" % mobile, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # try:
+        #     ccp = CCP()
+        #     expires = constants.SMS_CODE_REDIS_EXPIRES // 60
+        #     result = ccp.send_template_sms(mobile, [sms_code, expires], constants.SMS_CODE_TEMP_ID)
+        # except Exception as e:
+        #     logger.error("发送验证码短信[异常][ mobile: %s, message: %s ]" % (mobile, e))
+        #     return Response({'message': 'failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # else:
+        #     if result == 0:
+        #         logger.info("发送验证码短信[正常][ mobile: %s ]" % mobile)
+        #     else:
+        #         logger.warning("发送验证码短信[失败][ mobile: %s ]" % mobile, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # 返回
+        # 发送短信验证码  用celery
+        sms_code_expires = str(constants.SMS_CODE_REDIS_EXPIRES // 60)
+        sms_tasks.send_sms_code(mobile, sms_code, sms_code_expires)
+
 
     pass
