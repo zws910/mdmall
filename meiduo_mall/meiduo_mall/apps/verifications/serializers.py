@@ -31,6 +31,8 @@ class ImageCodeCheckSerializer(serializers.Serializer):
             raise serializers.ValidationError('图片验证码错误')
 
         # 判断是否在60s内
+        # get_serializer 方法在创建序列化器对象的时候, 会补充context属性
+        # context 属性中包含三个值, request format view 类视图对象
         mobile = self.context['view'].kwargs['mobile']
         send_flag = redis_conn.get("send_flag_%s" % mobile)
         if send_flag:

@@ -41,6 +41,7 @@ INSTALLED_APPS = (
 
     'rest_framework',
     'users.apps.UsersConfig',
+    'corsheaders'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -52,6 +53,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
 )
 
 ROOT_URLCONF = 'meiduo_mall.urls'
@@ -190,3 +193,12 @@ REST_FRAMEWORK = {
 
 # Models
 AUTH_USER_MODEL = 'users.User'
+
+# CORS
+CORS_ORIGIN_WHITELIST = (
+    '127.0.0.1:8080',
+    'localhost:8080',
+    'www.meiduo.site:8080',
+    'api.meiduo.site:8000'
+)
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie

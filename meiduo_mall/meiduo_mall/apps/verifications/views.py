@@ -46,9 +46,11 @@ class SMSCodeView(GenericAPIView):
             mobile, image_code_id, text
     """
 
+    serializer_class = ImageCodeCheckSerializer
+
     def get(self, request, mobile):
         # 校验参数　由序列化器完成
-        serializer = ImageCodeCheckSerializer(data=request.query_params)
+        serializer = self.get_serializer(data=request.query_params)
         # s.get_serializer
         serializer.is_valid(raise_exception=True)
 
@@ -58,8 +60,8 @@ class SMSCodeView(GenericAPIView):
         # 保存短信验证码 redis管道
         redis_conn = get_redis_connection('verify_codes')
         pl = redis_conn.pipeline()
-        pl.setex("sms_%s" % mobile, constants.SMS_CODE_REDIS_EXPIRES, )
-        pl.setex("send_flag_" % mobile, constants.SEND_SMS_CODE_INTERVAL, 1)
+        pl.setex("sms_%s" % mobile, constants.SMS_CODE_REDIS_EXPIRES, sms_code)
+        pl.setex("send_flag_%s" % mobile, constants.SEND_SMS_CODE_INTERVAL, 1)
 
         pl.execute()
 
@@ -79,7 +81,6 @@ class SMSCodeView(GenericAPIView):
 
         # 发送短信验证码  用celery
         sms_code_expires = str(constants.SMS_CODE_REDIS_EXPIRES // 60)
-        sms_tasks.send_sms_code(mobile, sms_code, sms_code_expires)
+        sms_tasks.send_sms_code(mobile, sms_code, sms_code_expires, constants.SMS_CODE_TEMP_ID)
 
-
-    pass
+        return Response({"message": "OK"})
