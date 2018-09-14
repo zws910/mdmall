@@ -43,7 +43,8 @@ INSTALLED_APPS = (
 
     'rest_framework',
     'users.apps.UsersConfig',
-    'corsheaders'
+    'corsheaders',
+    'oauth'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -203,6 +204,7 @@ REST_FRAMEWORK = {
 # JWT
 JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),  # 有效期
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler',
 }
 # Models
 AUTH_USER_MODEL = 'users.User'
@@ -215,3 +217,14 @@ CORS_ORIGIN_WHITELIST = (
     'api.meiduo.site:8000'
 )
 CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+
+# Login
+AUTHENTICATION_BACKENDS = [
+    'users.utils.UsernameMobileAuthBackend',
+]
+
+# QQ Login
+QQ_CLIENT_ID = '101474184'
+QQ_CLIENT_SECRET = 'c6ce949e04e12ecc909ae6a8b09b637c'
+QQ_REDIRECT_URI = 'http://www.meiduo.site:8080/oauth_callback.html'
+QQ_STATE = '/'
