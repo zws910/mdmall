@@ -44,7 +44,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'users.apps.UsersConfig',
     'corsheaders',
-    'oauth'
+    'oauth',
 )
 
 MIDDLEWARE_CLASSES = (
