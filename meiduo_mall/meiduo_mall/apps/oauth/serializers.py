@@ -45,7 +45,7 @@ class OAuthQQUserSerializer(serializers.ModelSerializer):
         # 校验短信验证码
         mobile = attrs['mobile']
         sms_code = attrs['sms_code']
-        redis_conn = get_redis_connection['verify_codes']
+        redis_conn = get_redis_connection('verify_codes')
         real_sms_code = redis_conn.get('sms_%s' % mobile)
         if real_sms_code.decode() != sms_code:
             raise serializers.ValidationError('短信验证码错误')
@@ -72,6 +72,7 @@ class OAuthQQUserSerializer(serializers.ModelSerializer):
 
         if user:
             # 若果存在, 绑定身份 创建数据
+            print(user, openid)
             OAuthQQUser.objects.create(user=user, openid=openid)
         else:
             # 如果不存在, 先创建user, 创建oauthqquser数据

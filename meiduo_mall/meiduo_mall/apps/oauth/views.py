@@ -65,7 +65,6 @@ class QQAuthUserView(CreateAPIView):
             access_token = oauth.generate_bind_user_access_token(openid)
             return Response({'access_token': access_token})
 
-
         else:
             # 数据存在, 表示用户已经绑定过身份, 签发JWT token
             jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER

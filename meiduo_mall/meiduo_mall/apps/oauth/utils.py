@@ -61,9 +61,9 @@ class OAuthQQ(object):
             logger.error('获取access_token异常: %s' % e)
             raise OAuthQQAPIError
         else:
-            access_token = response_dict.get('access_token')
+            access_token = response_dict.get('access_token', None)
 
-        return access_token
+        return access_token[0]
 
     def get_openid(self, access_token):
         """获取openid"""
@@ -83,9 +83,9 @@ class OAuthQQ(object):
             logger.error('获取openid异常: %s' % e)
             raise OAuthQQAPIError
         else:
-            access_token = response_dict.get('access_token')
+            openid = response_dict.get('openid', None)
 
-        return access_token
+        return openid
 
     def generate_bind_user_access_token(self, openid):
         serializer = TJWSSerializer(secret_key=settings.SECRET_KEY, expires_in=constants.BIND_USER_ACCESS_TOKEN_EXPIRES)

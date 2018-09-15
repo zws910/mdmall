@@ -24,12 +24,37 @@ var vm = new Vue({
         sms_code: '',
         access_token: ''
     },
-    mounted: function(){
-
+    mounted: function () {
+        // 从路径中获取qq重定向返回的code
+        var code = this.get_query_string('code');
+        axios.get(this.host + '/oauth/qq/user/?code=' + code, {
+            responseType: 'json',
+        })
+            .then(response => {
+                if (response.data.user_id) {
+                    // 用户已绑定
+                    sessionStorage.clear();
+                    localStorage.clear();
+                    localStorage.user_id = response.data.user_id;
+                    localStorage.username = response.data.username;
+                    localStorage.token = response.data.token;
+                    var state = this.get_query_string('state');
+                    location.href = state;
+                } else {
+                    // 用户未绑定
+                    this.access_token = response.data.access_token;
+                    this.generate_image_code();
+                    this.is_show_waiting = false;
+                }
+            })
+            .catch(error => {
+                console.log(error.response.data);
+                alert('服务器异常');
+            })
     },
     methods: {
         // 获取url路径参数
-        get_query_string: function(name){
+        get_query_string: function (name) {
             var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
             var r = window.location.search.substr(1).match(reg);
             if (r != null) {
@@ -38,20 +63,20 @@ var vm = new Vue({
             return null;
         },
         // 生成uuid
-        generate_uuid: function(){
+        generate_uuid: function () {
             var d = new Date().getTime();
-            if(window.performance && typeof window.performance.now === "function"){
+            if (window.performance && typeof window.performance.now === "function") {
                 d += performance.now(); //use high-precision timer if available
             }
-            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                var r = (d + Math.random()*16)%16 | 0;
-                d = Math.floor(d/16);
-                return (c =='x' ? r : (r&0x3|0x8)).toString(16);
+            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = (d + Math.random() * 16) % 16 | 0;
+                d = Math.floor(d / 16);
+                return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
             });
             return uuid;
         },
         // 生成一个图片验证码的编号，并设置页面中图片验证码img标签的src属性
-        generate_image_code: function(){
+        generate_image_code: function () {
             // 生成一个编号
             // 严格一点的使用uuid保证编号唯一， 不是很严谨的情况下，也可以使用时间戳
             this.image_code_id = this.generate_uuid();
@@ -59,33 +84,33 @@ var vm = new Vue({
             // 设置页面中图片验证码img标签的src属性
             this.image_code_url = this.host + "/image_codes/" + this.image_code_id + "/";
         },
-        check_pwd: function (){
+        check_pwd: function () {
             var len = this.password.length;
-            if(len<8||len>20){
+            if (len < 8 || len > 20) {
                 this.error_password = true;
             } else {
                 this.error_password = false;
             }
         },
-        check_phone: function (){
+        check_phone: function () {
             var re = /^1[345789]\d{9}$/;
-            if(re.test(this.mobile)) {
+            if (re.test(this.mobile)) {
                 this.error_phone = false;
             } else {
                 this.error_phone_message = '您输入的手机号格式不正确';
                 this.error_phone = true;
             }
         },
-        check_image_code: function (){
-            if(!this.image_code) {
+        check_image_code: function () {
+            if (!this.image_code) {
                 this.error_image_code_message = '请填写图片验证码';
                 this.error_image_code = true;
             } else {
                 this.error_image_code = false;
             }
         },
-        check_sms_code: function(){
-            if(!this.sms_code){
+        check_sms_code: function () {
+            if (!this.sms_code) {
                 this.error_sms_code_message = '请填写短信验证码';
                 this.error_sms_code = true;
             } else {
@@ -93,7 +118,7 @@ var vm = new Vue({
             }
         },
         // 发送手机短信验证码
-        send_sms_code: function(){
+        send_sms_code: function () {
             if (this.sending_flag == true) {
                 return;
             }
@@ -109,9 +134,9 @@ var vm = new Vue({
             }
 
             // 向后端接口发送请求，让后端发送短信验证码
-            axios.get(this.host + '/sms_codes/' + this.mobile + '/?text=' + this.image_code+'&image_code_id='+ this.image_code_id, {
-                    responseType: 'json'
-                })
+            axios.get(this.host + '/sms_codes/' + this.mobile + '/?text=' + this.image_code + '&image_code_id=' + this.image_code_id, {
+                responseType: 'json'
+            })
                 .then(response => {
                     // 表示后端发送短信成功
                     // 倒计时60秒，60秒后允许用户再次点击发送短信验证码的按钮
@@ -143,7 +168,7 @@ var vm = new Vue({
                 })
         },
         // 保存
-        on_submit: function(){
+        on_submit: function () {
             this.check_pwd();
             this.check_phone();
             this.check_sms_code();
@@ -175,6 +200,7 @@ var vm = new Vue({
                         }
                     })
             }
+
 
         }
     }
