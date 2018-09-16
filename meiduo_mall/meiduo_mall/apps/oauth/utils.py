@@ -48,7 +48,7 @@ class OAuthQQ(object):
             'redirect_uri': self.redirect_uri,
         }
 
-        url = 'https://graph.qq.com/oauth2.0/token?' + urlencode(params)
+        url = 'https://graph.qq.com/oauth2.0/token?' + urllib.parse.urlencode(params)
         # urlopen发送http请求
         try:
             response = urlopen(url)
@@ -61,9 +61,8 @@ class OAuthQQ(object):
             logger.error('获取access_token异常: %s' % e)
             raise OAuthQQAPIError
         else:
-            access_token = response_dict.get('access_token', None)
-
-        return access_token[0]
+            access_token = response_dict.get('access_token')
+            return access_token[0]
 
     def get_openid(self, access_token):
         """获取openid"""

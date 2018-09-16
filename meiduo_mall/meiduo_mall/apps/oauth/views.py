@@ -14,6 +14,7 @@ from oauth.models import OAuthQQUser
 from oauth.utils import OAuthQQ
 from .exceptions import OAuthQQAPIError
 from .serializers import OAuthQQUserSerializer
+from oauth.exceptions import OAuthQQAPIError
 
 
 class QQAuthURLView(APIView):
@@ -48,7 +49,6 @@ class QQAuthUserView(CreateAPIView):
 
         oauth = OAuthQQ()
 
-        from oauth.exceptions import OAuthQQAPIError
         try:
             # 凭借code 获取access_token
             access_token = oauth.get_access_token(code)

@@ -70,9 +70,10 @@ class OAuthQQUserSerializer(serializers.ModelSerializer):
         mobile = validated_data['mobile']
         password = validated_data['password']
 
+        print(openid, user)
         if user:
             # 若果存在, 绑定身份 创建数据
-            print(user, openid)
+            print(user, openid)  # for test
             OAuthQQUser.objects.create(user=user, openid=openid)
         else:
             # 如果不存在, 先创建user, 创建oauthqquser数据
