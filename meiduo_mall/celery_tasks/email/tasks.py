@@ -4,13 +4,14 @@ from django.core.mail import send_mail
 from celery_tasks.main import celery_app
 
 
+
 @celery_app.task(name='send_verify_email')
 def send_verify_email(to_email, verify_url):
     """
     发送验证邮箱邮件
-    :param to_email:
-    :param verify_url:
-    :return:
+    :param to_email: 收件人邮箱
+    :param verify_url: 验证连接
+    :return: None
     """
     subject = "美多商城邮箱验证"
     html_message = '<p>尊敬的用户您好！</p>' \

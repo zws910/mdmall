@@ -108,13 +108,26 @@ class EmailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email')
+        extra_kwargs = {
+            'email': {
+                'required': True
+            }
+        }
 
     def update(self, instance, validated_data):
+        """
+        更新  发送验证邮件
+        :param instance: 视图传过来的user对象
+        :param validated_data:
+        :return:
+        """
+
         email = validated_data['email']
+        instance.email = email
         instance.save()
         # 生成激活连接
         url = instance.generate_verify_email_url()
-
+        # /success_verify_email.html?token=xxxxxx
         # 发送邮件
         send_verify_email.delay(email, url)
 
