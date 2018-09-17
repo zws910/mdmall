@@ -45,6 +45,7 @@ INSTALLED_APPS = (
     'users.apps.UsersConfig',
     'corsheaders',
     'oauth',
+    'areas',
 )
 
 MIDDLEWARE_CLASSES = (
