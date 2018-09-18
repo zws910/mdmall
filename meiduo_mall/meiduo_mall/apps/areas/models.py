@@ -14,6 +14,8 @@ class Area(models.Model):
 
     class Meta:
         db_table = 'tb_areas'
+        verbose_name = '行政区划'
+        verbose_name_plural = '行政区划'
 
     def __str__(self):
-        return self.named
+        return self.name

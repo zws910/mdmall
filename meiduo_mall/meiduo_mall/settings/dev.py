@@ -240,3 +240,12 @@ EMAIL_HOST_USER = 'zws910@163.com'
 EMAIL_HOST_PASSWORD = 'zws5757517'
 # 收件人看到的发件人
 EMAIL_FROM = 'mdmall_admin<zws910@163.com>'
+
+
+# DRF扩展
+REST_FRAMEWORK_EXTENSIONS = {
+    # 缓存时间
+    'DEFAULT_CACHE_RESPONSE_TIMEOUT': 60 * 60,  # 1小时
+    # 缓存存储
+    'DEFAULT_USE_CACHE': 'default',
+}
