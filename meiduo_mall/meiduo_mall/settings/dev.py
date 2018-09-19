@@ -46,6 +46,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'oauth',
     'areas',
+    'goods',
 )
 
 MIDDLEWARE_CLASSES = (
