@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'oauth',
     'areas',
     'goods',
+    'contents'
 )
 
 MIDDLEWARE_CLASSES = (
