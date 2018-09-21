@@ -88,8 +88,6 @@ class CartView(APIView):
             response = Response(serializer.data)
             response.set_cookie('cart', cart_cookie, max_age=constants.CART_COOKIE_EXPIRES)
 
-
-
     def get(self, request):
         """查询购物车"""
         # 判断用户的登录状态
@@ -138,4 +136,56 @@ class CartView(APIView):
         serializer = CartSKUSerializer(sku_obj_list, many=True)
         return Response(serializer.data)
 
+    def put(self, request):
+        """修改购物车"""
+        # sku_id, count, selected
+        # 校验
+        serializer = CartSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # 判断用户登录状态
+        sku_id = serializer.validated_data['sku_id']
+        count = serializer.validated_data['count']
+        selected = serializer.validated_data['selected']
+        # 如果用户已登录, 修改redis
+        try:
+            user = request.user
+        except Exception:
+            user = None
+
+        # 保存
+        if user is not None and user.is_authenticated:
+            # 如果用户已登录, 修改redis
+            redis_conn = get_redis_connection('cart')
+            pl = redis_conn.piplien()
+
+            # hash
+            pl.hset('cart_%s' % user.id, sku_id, count)
+            # 处理勾选状态 set
+            if selected:
+                pl.sadd('cart_selected_%s' % user.id, sku_id)
+            else:
+                pl.srem('cart_selected_%s' % user.id, sku_id)
+            pl.execute()
+
+        else:
+            # 用户未登录, 在cookie中保存
+            cart = request.COOKIES.get('cart')
+            if cart is not None:
+                cart = pickle.loads(base64.b64decode(cart.encode()))
+            else:
+                cart = {}
+
+            cart[sku_id] = {
+                'count': count,
+                'selected': selected,
+            }
+
+            cookie_cart = base64.b64encode(pickle.dumps(cart)).decode()
+
+            response = Response(serializer.data)
+
+            # 设置购物车的cookie
+            # 需要设置有效期, 否则是临时cookie
+            response.set_cookie('cart', cookie_cart, max_age=constants.CART_COOKIE_EXPIRES)
+            return response
 
