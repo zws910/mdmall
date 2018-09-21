@@ -3,6 +3,7 @@ import base64
 import pickle
 from django.shortcuts import render
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
 
 from goods.models import SKU
 from . import constants
@@ -12,7 +13,7 @@ from django_redis import get_redis_connection
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
-from .serializers import CartSerializer, CartSKUSerializer, CartDeleteSerializer
+from .serializers import CartSerializer, CartSKUSerializer, CartDeleteSerializer, CartSelectAllSerializer
 
 
 class CartView(APIView):
@@ -157,7 +158,7 @@ class CartView(APIView):
         if user is not None and user.is_authenticated:
             # 如果用户已登录, 修改redis
             redis_conn = get_redis_connection('cart')
-            pl = redis_conn.piplien()
+            pl = redis_conn.pipeline()
 
             # hash
             pl.hset('cart_%s' % user.id, sku_id, count)
@@ -228,5 +229,50 @@ class CartView(APIView):
                 return response
 
 
+class CartSelectAllView(GenericAPIView):
+    """
+    购物车全选
+    """
+    serializer_class = CartSelectAllSerializer
 
+    def perform_authentication(self, request):
+        pass
 
+    def put(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        selected = serializer.validated_data['selected']
+
+        try:
+            user = request.user
+        except Exception:
+            user = None
+
+        if user is not None and user.is_authenticated:
+            # 已登录, redis
+            redis_conn = get_redis_connection('cart')
+            cart = redis_conn.hgetall('cart_%s' % user.id)
+            sku_id_list = cart.keys()
+
+            if selected:
+                # 全选
+                redis_conn.sadd('cart_selected_%s' % user.id, *sku_id_list)
+            else:
+                # 取消全选
+                redis_conn.srem('cart_selected_%s' % user.id, *sku_id_list)
+            return Response({'message': ' OK'})
+        else:
+            # cookie
+            cart = request.COOKIES.get('cart')
+            response = Response({'message': 'OK'})
+
+            if cart is not None:
+                cart = pickle.loads(base64.b64decode(cart.encode()))
+                for sku_id in cart:
+                    cart[sku_id]['selected'] = selected
+                cookie_cart = base64.b64encode(pickle.dumps(cart)).decode()
+                # 设置购物车的cookie
+                # 需要设置有效期, 否则是临时cookie
+                response.set_cookie('cart', cookie_cart, max_age=constants.CART_COOKIE_EXPIRES)
+
+            return response

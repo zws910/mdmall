@@ -4,7 +4,6 @@ from goods.models import SKU
 
 
 class CartSerializer(serializers.Serializer):
-
     sku_id = serializers.IntegerField(label='sku id', min_value=1)
     count = serializers.IntegerField(label='数量', min_value=1)
     selected = serializers.BooleanField(label='是否勾选', default=True)
@@ -33,7 +32,6 @@ class CartSKUSerializer(serializers.ModelSerializer):
         fields = ('id', 'count', 'name', 'default_image_url', 'price', 'selected')
 
 
-
 class CartDeleteSerializer(serializers.Serializer):
     """
     删除购物车数据序列化器
@@ -47,3 +45,10 @@ class CartDeleteSerializer(serializers.Serializer):
             raise serializers.ValidationError('商品不存在')
 
         return value
+
+
+class CartSelectAllSerializer(serializers.Serializer):
+    """
+    购物车全选
+    """
+    selected = serializers.BooleanField(label='全选')
