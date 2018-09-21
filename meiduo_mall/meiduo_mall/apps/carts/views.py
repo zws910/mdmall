@@ -11,7 +11,7 @@ from django_redis import get_redis_connection
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
-from .serializers import CartSerializer
+from .serializers import CartSerializer, CartSKUSerializer
 
 
 class CartView(APIView):
@@ -104,7 +104,7 @@ class CartView(APIView):
             redis_conn = get_redis_connection('cart')
             redis_cart = redis_conn.hgetall('cart_%s' % user.id)
 
-            redis_cart_selected = redis_conn.smemebers('cart_selected_%s' % user.id)
+            redis_cart_selected = redis_conn.smembers('cart_selected_%s' % user.id)
             # 遍历redis_cart, 形成cart_dict
             cart_dict = {}
             for sku_id, count in redis_cart.items():
@@ -135,5 +135,7 @@ class CartView(APIView):
             sku.selected = cart_dict[sku.id]['selected']
 
         # 序列化返回
+        serializer = CartSKUSerializer(sku_obj_list, many=True)
+        return Response(serializer.data)
 
 
