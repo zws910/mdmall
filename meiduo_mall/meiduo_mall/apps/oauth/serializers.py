@@ -88,4 +88,6 @@ class OAuthQQUserSerializer(serializers.ModelSerializer):
 
         user.token = token
 
+        self.context['view'].user = user
+
         return user
