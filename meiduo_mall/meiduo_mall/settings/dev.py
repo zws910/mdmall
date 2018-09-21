@@ -51,6 +51,7 @@ INSTALLED_APPS = (
     'areas',
     'goods',
     'contents',
+    'carts',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -138,6 +139,13 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
+    "cart": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/4",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
@@ -255,7 +263,6 @@ EMAIL_HOST_PASSWORD = 'zws5757517'
 # 收件人看到的发件人
 EMAIL_FROM = 'mdmall_admin<zws910@163.com>'
 
-
 # DRF扩展
 REST_FRAMEWORK_EXTENSIONS = {
     # 缓存时间
@@ -263,7 +270,6 @@ REST_FRAMEWORK_EXTENSIONS = {
     # 缓存存储
     'DEFAULT_USE_CACHE': 'default',
 }
-
 
 # django文件存储
 DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fdfs_storage.FastDFSStorage'
@@ -288,7 +294,8 @@ GENERATED_STATIC_HTML_FILES_DIR = os.path.join(os.path.dirname(os.path.dirname(B
 # 定时任务
 CRONJOBS = [
     # 每5分钟执行一次生成主页静态文件
-    ('*/5 * * * *', 'contents.crons.generate_static_index_html', '>> /home/python/Desktop/Django_dir/mdmall/meiduo_mall/logs/crontab.log')
+    ('*/5 * * * *', 'contents.crons.generate_static_index_html',
+     '>> /home/python/Desktop/Django_dir/mdmall/meiduo_mall/logs/crontab.log')
 ]
 # 解决crontab中文问题
 CRONTAB_COMMAND_PREFIX = 'LANG_ALL=zh_cn.UTF-8'
