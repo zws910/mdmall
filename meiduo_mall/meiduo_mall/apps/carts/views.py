@@ -168,6 +168,7 @@ class CartView(APIView):
             else:
                 pl.srem('cart_selected_%s' % user.id, sku_id)
             pl.execute()
+            return Response(serializer.data)
 
         else:
             # 用户未登录, 在cookie中保存
