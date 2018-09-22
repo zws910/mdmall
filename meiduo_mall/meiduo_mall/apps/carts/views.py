@@ -68,11 +68,11 @@ class CartView(APIView):
             cart_str = request.COOKIES.get('cart')
             # 解析
             if cart_str:
-                cart_str = cart_str.decode()
+                cart_str = cart_str.encode()
                 cart_bytes = base64.b64decode(cart_str)
                 cart_dict = pickle.loads(cart_bytes)
             else:
-                cart_dict = []
+                cart_dict = {}
 
             # 如果商品存在购物车中, 累加
             if sku_id in cart_dict:
@@ -89,6 +89,7 @@ class CartView(APIView):
             # 设置cookie
             response = Response(serializer.data)
             response.set_cookie('cart', cart_cookie, max_age=constants.CART_COOKIE_EXPIRES)
+            return response
 
     def get(self, request):
         """查询购物车"""
