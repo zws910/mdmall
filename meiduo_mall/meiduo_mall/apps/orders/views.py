@@ -12,6 +12,7 @@ from goods.models import SKU
 from .serializers import OrderSettleSerializer, SaveOrderSerializer
 
 
+# GET /orders/settlement/
 class OrderSettlementView(APIView):
     """
     订单结算
