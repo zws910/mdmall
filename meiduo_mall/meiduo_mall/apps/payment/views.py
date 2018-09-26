@@ -33,7 +33,7 @@ class PaymentView(APIView):
                 order_id=order_id,
                 user=user,
                 status=OrderInfo.ORDER_STATUS_ENUM['UNPAID'],
-                pay_method=OrderInfo.ORDER_STATUS_ENUM['ALIPAY']
+                pay_method=OrderInfo.PAY_METHODS_ENUM['ALIPAY']
             )
         except OrderInfo.DoesNotExist:
             return Response({'message': '订单信息有误'}, status=status.HTTP_400_BAD_REQUEST)
